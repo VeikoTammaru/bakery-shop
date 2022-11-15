@@ -1,0 +1,31 @@
+.product {
+    width: 300px;
+}
+
+.price{
+    color:blue;
+    width: 100px;
+    text-align: right;
+}
+.price:after{
+    content: " €";
+}
+.quantity {
+    width: 100px;
+    text-align: center;
+}
+.quantity span {
+    display: inline-block;
+    width: 30px;
+    text-align: right;
+}
+.header {
+    vertical-align: top;
+}
+.odd{
+background-color: hsl(124, 54%, 95%)
+
+}
+.even{
+background-color: hsl(124, 54%, 90%)
+}
