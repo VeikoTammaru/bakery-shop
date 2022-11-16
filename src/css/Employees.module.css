@@ -1,11 +1,18 @@
-.inputNone{
-    display: none;
-}
+
 .avatar{
     height: 128px;
     width: 128px;
 }
-.table IMG {
-    width: 100px;
-    height: 100px;
+.table IMG, .addImage  {
+    width: 128px;
+    height: 128px;
+}
+.noImage {
+    display: inline-block  ;
+    width: 126px;
+    height: 126px;
+    border: 2px dotted grey;
+    border-radius: 5px;
+    text-align: center;
+    vertical-align: middle ;
 }

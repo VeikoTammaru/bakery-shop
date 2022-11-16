@@ -1,3 +1,4 @@
+import imageExists from "image-exists";
 import { useState, useEffect, useRef } from "react";
 import { Button, Table } from "react-bootstrap";
 import { ToastContainer, toast } from 'react-toastify';
@@ -6,14 +7,14 @@ import style from '../css/Employees.module.css'
 
 function Employees() {
   const [employee, setEmployee] = useState([]);
-  // const [isOk, setIsOk] =useState(false);
+  const [inputNone, setInputNone] = useState(true);
   const idRef = useRef();
   const nameRef = useRef();
   const firstNameRef = useRef();
   const lastNameRef = useRef();
   const emailRef = useRef();
-  const imgRef = useRef();
   const urlRef = useRef();
+  
 
   //DONE  TODO: Load data from backend service
 
@@ -25,20 +26,25 @@ function Employees() {
   );
 
   useEffect (()=>{
-      idRef.current.value = Math.max(...employee.map(o => o.id))+1
+      idRef.current.value = Math.max(...employee.map(el => el.id))+1
     }, [employee]
   );
 
   const addEmployee = () => {
-      toast("// TODO: Add validations");
-      toast("// TODO: Add an employee to the table");
+      // TODO: Add validations
+      // TODO: Add an employee to the table
+      if(!(validateID() && validateEmail() && validateName(firstNameRef)&& validateName(lastNameRef) && validateURL())) return false;
+
       const newEmployee = {
           "id": idRef.current.value,
           "email": emailRef.current.value, 
           "first_name":firstNameRef.current.value,
           "last_name": firstNameRef.current.value,
-          "avatar": imgRef.current.value
+          "avatar": urlRef.current.value
       }
+      employee.push(newEmployee);
+      console.log(employee)
+      setEmployee(employee.slice());
     }
 
   const deleteEmployee = (ix) => {
@@ -71,46 +77,89 @@ function Employees() {
   }
 
   const validateEmail = () => {
-    const regex = new RegExp ('^[[a-zA-Z0-9-.]+@([[a-zA-Z0-9-.]+.)+[[a-zA-Z0-9-]{2,4}$', 'gm');
+    const regex = new RegExp (/^(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])$/, 'gm');
     if (regex.test(emailRef.current.value)){
       emailRef.current.className = "form-control";
       return true;
     } else {
-      emailRef.current.className = "form-control inputError";
-      toast ("Please insert valid email. /n Username @ Mailserver . Domain");
+      if (emailRef.current.value !== "") {
+        emailRef.current.className = "form-control inputError";
+      }
+      toast.error ("Please insert valid email. /n Username @ Mailserver . Domain");
       return false;
     }
-
   }
 
   const validateURL = () =>{
-    const regex = new RegExp ('.[j|J][p|P][G|g]$', 'gm');
+   // toast("The URL will not be entered.");
+   //  return true;
+    
+    const regex = new RegExp ('^https?:[^=\?]*.[j|J][p|P][G|g]$', 'gm');
     const testUrl = urlRef.current.value.trim();
-    const returnFalse = txt =>{
+    let isValid = false;
+    
+    const valid =() =>{
+      document.getElementById("xx").src = testUrl;
+      urlRef.current.className = "form-control";
+      isValid = true;
+    }
+    const notValid= txt =>{
       console.log(txt);
-      toast("Input must be valid URL and point to a jpg image."); 
-      urlRef.current.className = "form-control inputError";
+      toast.error("Input must be valid URL(with 'http(s):') and point to a jpg image."); 
+      if (urlRef.current.value !== "") urlRef.current.className = "form-control inputError";
+      document.getElementById("xx").src = "";
+      isValid = false;
       return false; 
     }
+    
+//    const isValidHttpUrl = string => {
+  //  }
 
-    if(!regex.test(testUrl)) return returnFalse("pole jpg");
+    if(!regex.test(testUrl)) return notValid("not jpg");
+
+    /* sobib kui cors on oma
      fetch(testUrl)
-      .then (e => {
-        if(e.status === 200){
-          urlRef.current.className = "form-control";
-          return true;
+      .then (res => {
+        console.log(res);
+        if(res.status===200){
+          valid();
         } else {
-          returnFalse(e.status);
+          notValid('status '+ res.status);
         }
       })
-      .catch(e => returnFalse("catch"));
-     return false;
+      .catch(e => {notValid("catch");console.log(e)} );
+    */
+   /*
+      try {
+        let url = new URL(testUrl);
+        if (url.protocol === "http:" || url.protocol === "https:"){
+          valid();
+        } else {
+          notValid("Not http")
+        }
+      } catch (_) {
+        notValid("Url catch");
+      }
+      */
+
+      imageExists(testUrl, function(exists) {
+        if (exists) {
+          console.log("it's alive!");
+          valid();
+        }
+        else {
+          console.log("oh well");
+          notValid("imageExists");
+        }
+      });
+      return isValid;
   }
+ 
   const newInput = () =>{
-    nameRef.current.className = style.inputNone;
-    firstNameRef.current.className="form-control";
-    lastNameRef.current.className="form-control";
-    firstNameRef.current.focus()
+    setInputNone(false);
+      setTimeout(() => {
+        firstNameRef.current.focus();  
+      }, 50);
   }
 
   const newInputBlure = () => {
@@ -119,11 +168,8 @@ function Employees() {
 
   const newInputBlureTimeout = () =>{
     if((firstNameRef.current===document.activeElement) || (lastNameRef.current===document.activeElement)) return;
-    nameRef.current.className = "form-control";
-    firstNameRef.current.className=style.inputNone;
-    lastNameRef.current.className=style.inputNone;
-    nameRef.current.value = firstNameRef.current.value + " " + lastNameRef.current.value;
-    nameRef.current.title = firstNameRef.current.value + " " + lastNameRef.current.value;
+    setInputNone(true);
+    nameRef.current.title = nameRef.current.value = firstNameRef.current.value + " " + lastNameRef.current.value;
     validateName (nameRef);
   }
   
@@ -148,28 +194,36 @@ function Employees() {
               <td>{el.id}</td>
               <td>{el.first_name + " " + el.last_name}</td>
               <td>{el.email}</td>
-              <td><img src={el.avatar} alt="avatar" className="avatar"/></td>
+              <td>
+                {el.avatar!==''?<img src={el.avatar} alt="avatar" className={style.avatar}/>
+                               :<span className={style.noImage}>No image</span>
+                }
+              </td>
               <td><Button onClick={()=>deleteEmployee(ix)} type="button" variant="danger">Delete</Button></td>
             </tr>
           )}
         <tr className="input-row">
           <td><input onBlur={validateID} ref={idRef} type="text" placeholder="ID" className="form-control" size="3" /></td>
           
-          <td><input onFocus={newInput} ref={nameRef} type="text" placeholder="Name" className =" form-control"/>
-              <span onBlur={newInputBlure}>
-                <input onChange={()=>validateName(firstNameRef)} ref={firstNameRef} placeholder="First name" className={style.inputNone } />
-                <input onChange={()=>validateName(lastNameRef)} ref={lastNameRef} placeholder="Last name" className={style.inputNone}/>
-              </span>
+          <td>
+            <span className={!inputNone ?"inputNone":undefined }>
+              <input onFocus={newInput} ref={nameRef} type="text" placeholder="Name" className =" form-control"/>
+            </span>
+            <span className={inputNone ?"inputNone":undefined} onBlur={newInputBlure}>
+              <input onChange={()=>validateName(firstNameRef)} ref={firstNameRef} placeholder="First name" className="form-control" />
+              <input onChange={()=>validateName(lastNameRef)} ref={lastNameRef} placeholder="Last name" className="form-control"/>
+            </span>
           </td>
 
           <td><input ref={emailRef} onBlur={validateEmail} type="text" placeholder="Email" className="form-control"/></td>
           <td><input ref={urlRef} onBlur={validateURL} type="Url" placeholder="Avatar JPG URL" className="form-control" title="Insert employee avatar URL in JPG format."/></td>
           <td><Button onClick={addEmployee} type="submit" variant="success">Add</Button></td>
         </tr>
+        
         </tbody>
       </Table>
+      <img id="xx" alt="xx" className={style.avatar}/>
     </div>
-
   </div>)
 }
 

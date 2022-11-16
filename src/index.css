@@ -1,5 +1,6 @@
 body {
   margin: 0;
+  margin-bottom: 400px;
 }
 
 a {
@@ -19,4 +20,8 @@ a {
 
 .inputError{
   background-color: red;
+}
+
+.inputNone{
+  display: none;
 }
